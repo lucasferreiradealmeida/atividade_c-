@@ -1,0 +1,56 @@
+Exercício 5 (c) — Em quais situações static e dynamic são mais adequados?
+A escolha entre schedule(static) e schedule(dynamic) depende inteiramente da natureza da carga de trabalho dentro do seu loop for. A decisão se resume a um balanço entre balanceamento de carga e sobrecarga (overhead).
+
+Escalonamento static
+O que faz?
+Divide as iterações do loop em "pedaços" (chunks) de tamanho igual e os distribui para as threads de forma fixa, antes que o loop comece a ser executado. É como dividir um bolo em fatias idênticas e entregar uma para cada pessoa de uma só vez.
+
+Quando usar?
+É a escolha ideal para loops onde cada iteração leva aproximadamente o mesmo tempo para ser concluída. A carga de trabalho é previsível e uniforme.
+
+Nosso exercício (a[i] = x[i]^2 + ...) é o exemplo perfeito disso. Cada cálculo é idêntico em complexidade, então o trabalho já é naturalmente balanceado. Por isso, nos nossos testes, static foi consistentemente um pouco mais rápido.
+
+Vantagens:
+
+Sobrecarga (Overhead) Mínima: A divisão do trabalho é feita apenas uma vez no início. Não há necessidade de comunicação ou sincronização entre as threads durante a execução do loop, tornando-o extremamente eficiente.
+
+Desvantagens:
+
+Mau Balanceamento de Carga para Trabalhos Desiguais: Se algumas iterações forem muito mais lentas que outras, uma thread pode pegar um "pedaço difícil" e demorar muito mais para terminar, enquanto as outras threads que pegaram "pedaços fáceis" terminam cedo e ficam ociosas, esperando. O tempo total será ditado pela thread mais lenta.
+
+Escalonamento dynamic
+O que faz?
+Divide as iterações em "pedaços" menores e os coloca em uma "fila de trabalho". Cada thread, ao ficar livre, pega o próximo pedaço disponível na fila e o executa. Isso continua até que todos os pedaços tenham sido processados. É como ter uma pilha de pratos para lavar, e cada pessoa pega um prato assim que termina o anterior.
+
+Quando usar?
+É a melhor opção para loops onde o tempo de execução por iteração é variável ou imprevisível.
+
+Exemplo 1: Um loop que processa elementos de uma estrutura de dados irregular, onde alguns elementos exigem muito mais processamento que outros.
+
+Exemplo 2: Um loop que contém uma estrutura if/else complexa, onde o caminho de execução pode variar drasticamente o tempo de uma iteração.
+
+Exemplo 3: Em um loop while que foi paralelizado, onde não se sabe de antemão quantas iterações cada thread fará.
+
+Vantagens:
+
+Excelente Balanceamento de Carga: Garante que todos os núcleos do processador permaneçam ocupados o máximo de tempo possível. Se uma thread pegar um trabalho lento, as outras simplesmente pegarão mais pedaços de trabalho da fila, compensando o desequilíbrio.
+
+Desvantagens:
+
+Sobrecarga (Overhead) Maior: Existe um custo de gerenciamento. As threads precisam se comunicar e sincronizar com a fila de trabalho para pegar novas tarefas. Essa sobrecarga pode tornar o dynamic mais lento que o static em casos onde a carga de trabalho já é naturalmente balanceada (como vimos em nosso exercício).
+
+Tabela Resumo
+Característica	schedule(static)	schedule(dynamic)
+Tipo de Carga Ideal	Uniforme e Previsível	Variável e Imprevisível
+Balanceamento de Carga	Estático (pode ser ruim)	Dinâmico (geralmente excelente)
+Sobrecarga (Overhead)	Muito Baixa	Moderada a Alta
+Exemplo de Uso	Processamento de imagens, cálculos matemáticos em vetores.	Algoritmos de grafos, busca em árvores, laços com condicionais complexas.
+
+Conclusão Final: A regra geral é começar com schedule(static) por ser o mais rápido e simples. Se você sabe ou suspeita que a carga de trabalho do seu loop é desbalanceada, mude para schedule(dynamic) para obter um melhor aproveitamento do poder de processamento.
+
+
+
+
+
+
+
